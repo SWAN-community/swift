@@ -207,7 +207,7 @@ the access node with a secret it knows about from the first storage node it has
 selected.
 
 ```
-https://storagenode-a.net/OC41MWRjLnVrOC412Mv6Vp0DFeTCFhhKHz1H2JabpJ8cA-4/mKsa58t6yxpXGDhsIflwntbwaK8sYSJVr0jFFAFht59H-CjpzIgTPJIVF1GROUlJ_2JwDq1GdhZ0o-27vuzt4jZ_ztTJ69f8bAvj_ostJmXyl_pdG6lnns-cRZ3Pm5y-t1uL2t5zPa9iYeQuUmgHOVp3koh0PFe_KKyRO2T3wI26Ja1FGJPbFaRcj_MD7JuUhyq2mHTFvJwDnAUvPo2GdyJBLXMqnwjT2dv8l-amEKLkzkMd4hbsc-hdyRK98tqml3Y
+https://storagenode-a.net/OC41MWRjLnVrOC412Mv6Vp0DFeTCFhhKHz1H2JabpJ8cA-4/mKsa58t6yxpX...DnAUvPo2GdyJBLXM
 ```
 
 The web server initiating the request will be responsible for redirecting the
@@ -251,7 +251,7 @@ and pass it to the access node to be decrypted. The following URL shows how this
 would be achieved in a server to server HTTP request.
 
 ```
-http://51dc.uk/api/v1/decrypt?c9hGPPnJxRNckcmeOspZZpPO95F71UO0lTEnB1bkHcHRtIv2LLTtaHdsmEUWi7NDjX5IdZYGQqBXxVdmf6yYtsKlWsYvpdjvNsTDw2Sps-cceRKoC7xwOn6rwgeik0OP-_EKv27sxKkEB7Iq6HhmSipd6GGeCQPb4G8u_qt7qMCoidzdyTLQ58765kHzbIRN
+http://51dc.uk/api/v1/decrypt?c9hGPPnJxRNckc...Q58765kHzbIRN
 ```
 
 The access node will return the keys in a JSON format with the created and
@@ -288,20 +288,19 @@ does not already exist.
 var url = swift.CreateStorageUrl(
     [returnUrl],
     [table],
-    new Pair([key], [value], [oldest-conflict-policy], [expiry-date]);
+    new Pair([key], [value], [conflictPolicy.OldestWins], [expiry-date]);
 
 // Example 2. Set the value if there isn’t another one that is newer.
 var url = swift.CreateStorageUrl(
     [returnUrl],
     [table],
-    new Pair([key], [value], [newest-conflict-policy], [expiry-date]);
+    new Pair([key], [value], [conflictPolicy.NewestWins], [expiry-date]);
 
 // Example 3. As example 1 with a custom user interace.
 var url = sharedStateService.CreateStorageUrl(
     [returnUrl],
     [table],
-    new Pair([key], [value], [oldest-conflict-policy], [expiry-date],
-    [conflictPolicy.OldestWins],
+    new Pair([key], [value], [conflictPolicy.OldestWins], [expiry-date],
     [title],
     [message],
     [backgroundColor],
