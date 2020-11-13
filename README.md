@@ -1,6 +1,6 @@
 ![Shared Web InFormaTion](images/swift.png)
 
-# Shared Web InFormaTion (SWIft) 
+# Shared Web InFormaTion (SWIFT) 
 
 Privacy preserving cross domain information sharing.
 
