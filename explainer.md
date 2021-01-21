@@ -1,4 +1,4 @@
-![Shared Web InFormaTion](images/swift.png)
+![Shared Web InFormaTion](images/swift.128.pxls.100.dpi.png)
 
 Shared Web InFormaTion (SWIFT)
 ==============================
