@@ -47,7 +47,7 @@ that centralize all data within only a few organizations.
 
 A shared unique identifier for a user agent, or in some cases a person’s
 account, is required to support the above use cases. This specification provides
-a method for such identifiers to be shared between first parties in a manner
+a method for such identifiers to be shared between internet domains in a manner
 that is both privacy preserving, implemented using only the most generic and
 universally deployed HTTP and web features, and supports the [W3C One Web
 mission](https://www.w3.org/Consortium/mission.html) by accommodating all major
@@ -66,9 +66,8 @@ Design considerations in order of importance are:
     established IETF standards recommendations. No information should ever be
     persisted server side.
 3.  Create a solution that embraces the W3C One Web mission by supporting all
-    common browser defaults .
-4.  Support a decentralized web by enabling a network of implementations by web
-    actors.
+    common browser defaults.
+4.  Support a decentralized web by enabling a network of multiple operators.
 5.  Present the most pleasing user experience possible given the prior
     considerations.
 6.  Provide opportunities to signal the user to change browser settings to
@@ -97,9 +96,8 @@ element’s refresh attributes currently governed by WHATWG.
 
 ### Compliance
 
-Complying with GDPR or any other law is a matter for web authors, data
-controllers or data processors privacy counsel and is solely a matter for
-implementors and is not within the scope of this recommendation.
+Complying with GDPR or any other regional law is a matter for web authors, data
+controllers or data processors and the advice of their privacy counsel.
 
 ### Authentication
 
@@ -107,9 +105,15 @@ Implementors of networks are free to determine the authentication method they
 wish to use that is suitable for the purpose and nature of the information they
 intend to store. A single organization implementing a network for the purposes
 of sharing information across multiple domains they own will be the only
-organization accessing the network. Multiple organizations sharing a network may
+organization accessing the network. Multiple organizations using a network may
 require the administrator to provide unique access tokens that enable an audit
 log of access requests to be maintained.
+
+## Normative References
+
+| **Term** | **Reference**                                                                  |
+|----------|--------------------------------------------------------------------------------|
+| Domain   | [RFC 920 - Domain requirements (ietf.org)](https://tools.ietf.org/html/rfc920) |
 
 ## Definitions
 
@@ -118,13 +122,13 @@ The following definitions are used throughout this project.
 | **Term**                 | **Description**                                                                                                                                                                                                                                                                                                                |
 |--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Access Node              | A node of the network that is used to initiate requests to the network from a server. Never accessed directly by the web browser. The access node is responsible for authentication to ensure only authorised entities can access the network.                                                                                 |
-| Conflict Policy          | Where multiple data values exist for the same key the policy determines if the most recent or the oldest value is used.                                                                                                                                                                                                        |
+| Conflict Policy          | Where multiple data values exist for the same key the policy determines if the most recent, or the oldest value is used, or if the key represents a list values signals that a unique union should be the result of a conflict.                                                                                                |
 | Expiry                   | Key value must be set to expire at a given time. This feature can be used to ensure that values are deleted automatically across the network at a given point in time.                                                                                                                                                         |
-| Host                     | An entity provisioning one or more nodes in the network. Hosts are “Data Processors” as defined by GDPR.                                                                                                                                                                                                                       |
+| Home Node                | A node that for a short period of time is most closely associated with a web browser. Used to reduce the chances of more than one node needing to used for a storage operation intended to retrieve data from the network.                                                                                                     |
 | Key                      | The key associated with the data in the network. The key name appears as the cookie name associated with the table or URL path. Unlike traditional key names keys must also include an expiry time for the value and a conflict resolution policy.                                                                             |
 | Network                  | Multiple nodes communicating with each other via the user agent’s address bar and a sequence of HTTP GET requests.                                                                                                                                                                                                             |
-| Home Node                | A node that for a short period of time is most closely associated with a web browser. Used to reduce the chances of more than one node needing to used for a storage operation intended to retrieve data from the network.                                                                                                     |
-| Node                     | An internet domain which implements this recommendation. Domains associated with nodes are rotated frequently.                                                                                                                                                                                                                 |
+| Node                     | An internet domain which implements this recommendation. A node must be run by an Operator and conform to the requirements of the SWIFT Network.                                                                                                                                                                               |
+| Operator                 | An entity provisioning one or more nodes in the network.                                                                                                                                                                                                                                                                       |
 | Scramble                 | Table names and keys are scrambled by each node to ensure that they are unique to the node.                                                                                                                                                                                                                                    |
 | Secrets                  | Secrets are used to encrypt all data.                                                                                                                                                                                                                                                                                          |
 | Storage Node             | A node that is used to write and read information and accessed via the web browser.                                                                                                                                                                                                                                            |
@@ -135,14 +139,14 @@ The following definitions are used throughout this project.
 ## Concept
 
 A network of distributed domains known as “nodes” are used to securely store
-information within first party cookie files associated with multiple domains.
-The network will consist of multiple nodes and hosts adhering to this common
-standard of interoperability.
+information within first party cookie files associated with multiple nodes. The
+network consists of multiple nodes and operators adhering to the SWIFT standard
+of interoperability.
 
 The following diagram provides an overview of the concept covering initiation (1
 &2), storage (3 to 5) and completion (6 &7).
 
-![Network overview](images/network-overview.png)
+![Network Overview](images/network-overview.png)
 
 1.  Website passes information to a Host’s access node to encrypt and return
     with first node URL.
@@ -159,15 +163,38 @@ The following diagram provides an overview of the concept covering initiation (1
 7.  Website operator extracts the encrypted information from the URL and passes
     it to the Host’s access node to decrypt.
 
+When viewed from the perspective of the web browser steps 1 and 7 would not be
+visible. The others would involve one-time encrypted data and might appear in
+the following order when observed by the web browser.
+
+| **Step** | **Domain**  | **Path**                                                       | **Cookies**                                |
+|----------|-------------|----------------------------------------------------------------|--------------------------------------------|
+| 2        | Node-A.com  | Encrypted storage operation data unique to the domain and path | Encrypted domain and path specific cookies |
+| 3        | Node-D.com  |                                                                |                                            |
+| 4        | Node-F.com  |                                                                |                                            |
+| 5        | Node-A.com  |                                                                |                                            |
+| 6        | Website.com |                                                                |                                            |
+
+The domain names assigned to the letters A to F are not important and show
+purely for illustrative purposes.
+
+The operation of SWIFT can be observed in the web browser in the demos available
+at <https://swan-demo.uk>.
+
 ### Initiation
 
 Data is written to the network by passing a return URL, table name, and one or
 more key/value pairs, in a server-to-server call to build a URL that the user
-agent should navigate to retrieve current information. Keys must also contain a
-greater than (\>) or a less than sign (\<) to indicate the conflict policy. A
-less than sign indicates that the oldest value in the network should be used if
-a value exists. A greater than sign indicates that the newest value, probably
-the value provided, is used if a value already exists.
+agent should navigate to so that the current information can be retrieved or
+updated.
+
+Keys must also contain a greater than (\>) or a less than sign (\<) to indicate
+the conflict policy to use for the operation. A less than sign indicates that
+the oldest value in the network should be used if a value exists. A greater than
+sign indicates that the newest value, probably the value provided, is used if a
+value already exists.
+
+A plus sign (+) can also be used to combine multiple values into a list.
 
 The following is an example of a URL passed from a server to an access node. The
 URL to return the browser window to is https://example.com, the table name is
@@ -180,15 +207,16 @@ https://accessnode.net/api/v1/create?returnUrl=https://example.com&table=example
 
 The access node will then respond with a URL that is not human readable for the
 first storage node to use for the storage operation. The path is encrypted by
-the access node with a secret it knows about from the first storage node it has
-selected.
+the access node with a secret it obtained from the first storage node to be used
+for the operation.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 https://storagenode-a.net/OC41MWRjLnVrOC412Mv6Vp0DFeTCFhhKHz1H2JabpJ8cA-4/mKsa58t6yxpX...DnAUvPo2GdyJBLXM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The web server initiating the request will be responsible for redirecting the
-web browser window to the returned URL.
+web browser window to the returned URL. This could be achieved for an HTTP 303
+redirect, via JavaScript changing the navigation URL, or via any other method.
 
 ### Storage operations
 
@@ -196,33 +224,39 @@ Each storage node will perform the following actions.
 
 1.  Receive the HTTP request and decrypt the URL path to obtain details of the
     storage operation.
-2.  Evaluate the cookies the storage node domain and path already knows about
-    either replacing them with the values held in the storage operation, or
-    updating the storage operation with the values from it’s cookies.
+2.  Evaluate the cookies the storage node domain and path already possess from a
+    previous operation if any, and either replacing them with the values held in
+    the storage operation or updating the storage operation with the values from
+    the cookies it possess.
 3.  Create the next URL to visit.
 
     a. If the number of nodes required to complete the storage operation have
-    not yet been visited then choose another storage node and encrypt the
-    operation data so that the next node can decrypt it.
+    not yet been visited then choose another storage node at random and encrypt
+    the operation data so that the next node can decrypt it.
 
-    b. If all the required nodes have been visited then use the return URL. The
-    operation data will be encrypted so that the access node used at initiation
-    can decrypt it.
+    b. If all the required nodes have been visited then use the return URL as
+    the next URL to direct to. The operation data will be encrypted so that the
+    access node used at initiation can decrypt it.
 
 4.  Respond to the browser with HTML and a meta refresh element to redirect the
     browser user interface to.
-5.  If an exception occurs, for example cookies are disabled, then a message can
-    be presented to the user.
+5.  If an exception occurs, for example cookies are disabled, there is a limit
+    on the number of redirects the user agent allows, or there is a limit on URL
+    lengths that prevent the storage operation being decrypted, then a message
+    can be presented to the user asking them to alter their browser settings
+    before retrying.
 
 The HTML response is important to inform the user as to what is happening and
-display a progress indicator and any additional information.
+display a progress indicator and any additional information. The reference
+implementation uses a consistent progress circle and a simple message to
+communicate status to the user.
 
 ### Completion
 
 When the web browser window returns to the return URL the encrypted data will be
 appended to the URL. The web site operator must then extract the encrypted data
-and pass it to the access node to be decrypted. The following URL shows how this
-would be achieved in a server to server HTTP request.
+and pass it to the Operators’ Access Node to be decrypted via a server-to-server
+request. The following URL shows an example.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 http://51dc.uk/api/v1/decrypt?c9hGPPnJxRNckc...Q58765kHzbIRN
@@ -269,7 +303,7 @@ var url = swift.CreateStorageUrl(
     [table],
     new Pair([key], [value], [conflictPolicy.NewestWins], [expiry-date]);
 
-// Example 3. As example 1 with a custom user interace.
+// Example 3. As example 1 with a custom user interface color scheme, message and title.
 var url = sharedStateService.CreateStorageUrl(
     [returnUrl],
     [table],
@@ -301,15 +335,15 @@ var jsonValues = swift.GetStorageValue([request.url.path]);
 
 As this project is deployed widely people will become used to the short delay
 that occurs prior to the publisher’s content becoming visible or when they
-provide information to store in networks. The intention of the user interface
-components is to provide a very simple and familiar user interface with limited
-customization to suit website operators’ requirements. For example, the colors
-can be chosen to match the primary colors used by the publisher to avoid a
-jarring experience, or the title and message could reflect the publisher’s
-brand. Storage operation messages might include “Hang tight. We’re getting
-things ready” for a consumer brand, or “Fetching shared information” for a more
-engineering audience. In all cases the message should take roughly the same
-length of time to read as the storage operation takes to complete.
+provide information to store in SWIFT networks. The intention of the user
+interface components is to provide a very simple and familiar user interface
+with limited customization to suit website operators’ requirements. For example,
+the colors can be chosen to match the primary colors used by the publisher to
+avoid a jarring experience, or the title and message could reflect the
+publisher’s brand. Storage operation messages might include “Hang tight. We’re
+getting things ready” for a consumer brand, or “Fetching shared information” for
+a more engineering audience. In all cases the message should take roughly the
+same length of time to read as the storage operation takes to complete.
 
 As modern browsers avoid a jarring experience when navigating between pages by
 keeping the previous page visible until the new one is ready to be rendered the
@@ -319,50 +353,60 @@ people’s use of the web.
 
 ## Network
 
-The following diagram shows a network with two hosts (1 and 2) each operating
-six nodes.
+By duplicating the same data in first party cookies associated with multiple
+domains in the same web browser a network is formed. If a single domain is
+retired from the network the data will persist in first party cookies stored in
+the other domains. A Node is associated with a single internet domain and also
+includes the server side compute resource needed for the Node to function.
+
+The following diagram shows a network with two Operators (1 and 2) each
+operating six Nodes.
 
 ![Different Nodes](images/different-nodes.png)
 
 The following definitions apply to each of the four node types.
 
--   Active node - an active storage node known only to the host used to store
-    information.
+-   Active node – a Storage Node that is currently available to support storage
+    operations and is known only to its Operator.
 -   Interconnect node - an active storage node which is also known to one or
-    more other hosts.
+    more other Operators. These nodes can be used by the other Operators to pass
+    Storage Operations to.
 -   Dormant node - a node that is ready to become part of the network but is not
     yet known to other nodes.
--   Retired node – a node that is no longer available.
+-   Retired node – a node that is no longer available for new Storage
+    Operations.
 
-Currently nodes B, C, F, G, H and J are active nodes that can be used for
-storage operations. Nodes F and J are also known to hosts 2 and 1 respectively
-and therefore can be used to pass storage operations between hosts in the same
-network.
+In the diagram nodes B, C, F, G, H and J are active nodes that can be used for
+storage operations. Nodes F and J are also known to Operators 2 and 1
+respectively and therefore can be used to pass storage operations between
+Operators in the same network.
 
 Nodes A and I have been retired from the network and are no longer being used.
 
-Nodes D, E, K and L are ready to join the network when the host makes them
+Nodes D, E, K and L are ready to join the network when the Operators marks them
 active.
 
 ## Home node
 
-Networks may contain 100s of nodes operated by many hosts. It is important to
-minimise delay when performing a storage operation. A home node is identified
-using some data that will be consistent for a period of time for a given web
-browser. The public IP address used for HTTP requests by the web browser is a
-suitable for this purpose.
+Networks may contain 100s of nodes run by many Operators. It is important to
+minimise delay when performing a storage operation, particularly the more
+repetitive read operations commonly used with web browser state data.
 
-In the following diagram node D is the home node for web browser 1, and node C
-the home node for web browser 2.
+A Home Node is identified using some data that will be consistent for a period
+of time for a given web browser. The public IP address used for HTTP requests by
+the web browser is suitable for this purpose.
+
+In the following diagram node D is the Home Node for web browser 1, and node C
+the Home Node for web browser 2.
 
 ![Home Nodes](images/home-nodes.png)
 
-The home node is used as the first and last storage node for the storage
-operation. Where information is being retrieved from the network if the home
-node holds a recent copy of the information other nodes in the network will not
+The Home Node is used as the first and last storage node for the storage
+operation. Where information is being retrieved from the network if the Home
+Node holds a recent copy of the information other nodes in the network will not
 need to be consulted and a single node is required to complete the operation.
 
-Home nodes provide the benefits of a single fixed domain used for the sharing of
+Home Nodes provide the benefits of a single fixed domain used for the sharing of
 web information without requiring a single centralized operator. They will also
 vary over time as the IP address or network changes.
 
@@ -372,22 +416,28 @@ Because the network may contain more nodes than can practically be accessed in a
 single storage operation it is possible that multiple values for the same key
 will exist in the network.
 
-Consider two storage operations where each operation uses different data. The
-first time the data is stored in nodes A to M. The second time the data is
-stored in nodes N to Z. There will be two different data values for the same key
-within the network.
+Consider two storage operations where each operation contains different values
+for the same key. Which one is the intended value for the key?
+
+Consider the first time the data is stored in nodes A to M. The second time the
+data is stored in nodes N to Z. There will be two different data values for the
+same key within the network.
 
 To resolve this problem time is a critical feature of the network. The UTC time
-that the data was added to the network will be recorded with the data. When a
-storage operation is carried out the requestor can decide how they wish a
-conflict between multiple data values to be resolved. They can request that the
-oldest value is returned, or the newest value.
+that the data was added to the network will be recorded with the data. UTC time
+is always calculated by the server operating the Node and as such should be
+consistent across the network. The Browser time is never used.
+
+When a storage operation is carried out the requestor can decide how they wish a
+conflict between multiple data values for the same key to be resolved. They can
+request that the oldest value is returned, the newest value, or if the key
+relates to a list of values that a unique list is formed.
 
 By favoring the oldest value that value is more likely to become the probable
 value returned the more often a large network is accessed.
 
 In practice this scenario will occur infrequently due to the assignment of a
-home node and ensuring that node is used for the first and last storage
+Home Node and ensuring the Home Node is used for the first and last storage
 operation.
 
 ## Keys
@@ -401,25 +451,28 @@ conventions.
 
 ### Key value
 
-The data stored is wrapped in the following structure. The data structure is
-used when storing data as a cookie, and alongside other fields when transmitted
-as part of a storage operation.
+The value data stored is wrapped in the following structure. The data structure
+is used when storing data as a cookie, and alongside other fields when
+transmitted as part of a storage operation.
 
 | **Field Name** | **Data Type**   | **Description**                                                                               |
 |----------------|-----------------|-----------------------------------------------------------------------------------------------|
 | Key            | String          | The name of the key associated with the value.                                                |
 | Created        | Long (8 bytes)  | A time in UTC conforming indicating when the value was created. Used for conflict resolution. |
 | Expires        | Short (2 bytes) | Number of hours after created date that the value will expire.                                |
-| Value          | String          | The information to be stored as a string.                                                     |
+| Value          | String          | The information stored as a string.                                                           |
 
-### Storage operation
+### Storage Operation URLs
 
-The key associated with the storage operation is the first segment of the URL
-path. The key is not stored in the data structure used to store the data or the
-state of the operation.
+The table associated with the storage operation is the first segment of the URL
+path. The table is not stored in the data structure to avoid duplication.
 
-A storage operation includes the data fields and also the following data needed
-to complete the operation.
+A storage operation URL consists of the following.
+
+<https://[domain> associated with the node]/[encrypted table name]/[encrypted
+storage operation]
+
+The encrypted storage operation includes the following data.
 
 | **Field Name**   | **Data Type**  | **Description**                                                                                              |
 |------------------|----------------|--------------------------------------------------------------------------------------------------------------|
@@ -436,9 +489,11 @@ to complete the operation.
 | HomeNode         | String         | The home node that must be visited as the last storage operation.                                            |
 | Key/Values       | Array          | An array of the key value pairs currently being used for the storage operation.                              |
 
-The table is not included in the operation data structure because it appears as
-the first segment of the storage operation URL. The encrypted data operation
-structure is the second segment.
+An example of the complete storage operation follows.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+https://19.51da.uk/MTkuNTFkYS51azE5BisFF7tTIVTmcQfiNMEcLdQ2m0U/3O5gSA-mxGX8Wg71vF4W6m2Seyj3wQpGfPlc3giL86ddSnlxABLV7TYppuWiNqE0zIFztlAEL3Lfe1xZdyljifW1xRF8mKujBFr2yn_UIQB-MYsec354Ae1d1cEx4nw4HTRiFuTeJKCGjfG8U2HK3FzL5Sldwcd_RbQw5RD3-kSBZEteIEi0nyIHATQVTYbXEMBwrLV3RJptqWG0MpmdRnqg88OTdk1yVrnkzdRnXOPvLs7J9zFALabIWCQkEZuPdAC-NOW2mvW0it7oZ8Ya4Ni5ABek1EDZqz3A8V1yMu6xXkWkJfH86Yy_6xij4oaWIjsYhC1W4k-f3VK4wmp7oSzqMhhE-3XgmKTLaVeCog
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Other considerations
 
@@ -459,17 +514,17 @@ storing privacy consent preferences across multiple parties. People will be able
 to express their consent preferences once without needing to surrender directly
 identifiable personal data and have this information shared across multiple
 organizations. As such it is expected that shared web information will
-contribute in a net improvement in web performance as perceived by people in
+contribute a net improvement in web performance as perceived by people in
 practice.
 
-### Bad actors
+### Unauthorized Access
 
-Bad actors are prevented from accessing the network by each host implementing
-authentications mechanisms at access nodes. Hosts operating together as a
-network must agree a common standard and level of authentication sufficient to
-prevent bad actors accessing the network.
+Each Operator should implement authentication mechanisms at Access Nodes.
+Operators forming a network must agree a common standard and level of
+authentication sufficient to prevent unauthorized access.
 
-As the information only ever persists in the web browser cookies in encrypted
-form a node AND the web browser will need to be compromised to enable a bad
-actor to extract information they are not authorized to. This risk is no greater
-than that which exists for any domain.
+As the information only ever persists in encrypted web browser cookies
+associated with a Nodes in the SWIFT network the risks of unauthorized access
+via the web browser no different to any other web site or service. As the data
+can not be shared across different domains in the web browser control over
+access to the data is maintained by the Operators.
