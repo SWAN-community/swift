@@ -1,10 +1,8 @@
 ![Shared Web InFormaTion](images/swift.128.pxls.100.dpi.png)
 
-Shared Web InFormaTion (SWIFT)
-==============================
+# Shared Web InFormaTion (SWIFT)
 
-Abstract
---------
+## Abstract
 
 Some common web use cases require information to be shared among multiple first
 parties. Historically these use cases were supported via so-called third-party
@@ -16,36 +14,27 @@ of information across multiple domains and does not consider information that is
 outside implementor’s networks. For example; when data leaves the network or
 prior to it being stored in the network.
 
-Use Cases
----------
+## Use Cases
 
 Common use cases that require information to be shared across multiple domains
 include.
 
 -   Authentication use cases
-
     -   Network access, such as public WiFi hotspot authentication.
-
     -   Content access, such as secure access to personal information stored in
         websites, such as email or social network accounts.
-
     -   Service or product procurement, such as secure payment via the web.
-
 -   Pseudonymous use cases
-
     -   Personalization, such as improving the effectiveness of content matching
         on multiple publishers that requires feedback to inform the correlation
         statistics of exposure to subsequent activity.
-
     -   Ex-ante improvements to advertising effectiveness, such as controlling
         the number of times someone sees the same advert across multiple
         publishers (frequency capping).
-
     -   Intra-campaign or post campaign improvements to advertising
         effectiveness, determining the value of advertising campaign exposure on
         multiple publisher properties given the subsequent effectiveness of
         driving awareness, engagement or revenue for a marketer.
-
     -   Intra-campaign or post campaign auditing of advertising effectiveness,
         such as counting the total advertising campaign exposures across
         multiple publishers (used for billing) or detecting publishers who
@@ -67,32 +56,25 @@ needs of people, [the primary constituents of the
 web](https://www.w3.org/TR/html-design-principles/#priority-of-constituencies),
 followed by content authors also known as “publishers”.
 
-Design Considerations
----------------------
+## Design Considerations
 
 Design considerations in order of importance are:
 
 1.  Ensure people are in control of their privacy to aid compliance with privacy
     regulations such as GDPR and CCPA.
-
 2.  Only persist information in the user agent using the most common and
     established IETF standards recommendations. No information should ever be
     persisted server side.
-
 3.  Create a solution that embraces the W3C One Web mission by supporting all
     common browser defaults .
-
 4.  Support a decentralized web by enabling a network of implementations by web
     actors.
-
 5.  Present the most pleasing user experience possible given the prior
     considerations.
-
 6.  Provide opportunities to signal the user to change browser settings to
     support the implementation.
 
-Standards
----------
+## Standards
 
 Whilst the solution does not require any new features to be implemented within
 user agents, it is important it progresses through the W3C to become a technical
@@ -103,18 +85,15 @@ the solution relies without due consideration.
 This recommendation is dependent on the following IETF standard.
 
 -   Cookies [[RFC6265](https://tools.ietf.org/html/rfc6265)]
-
 -   HTTP temporary redirect
     [[RFC7231](https://tools.ietf.org/html/rfc7231#section-6.4.7)]
-
 -   HTTP URL [[RFC3986](https://tools.ietf.org/html/rfc3986)]
 
 The recommendation is also dependent on
-[HTML](https://html.spec.whatwg.org/#attr-meta-http-equiv-refresh) and the
-meta element’s refresh attributes currently governed by WHATWG.
+[HTML](https://html.spec.whatwg.org/#attr-meta-http-equiv-refresh) and the meta
+element’s refresh attributes currently governed by WHATWG.
 
-Out of Scope
-------------
+## Out of Scope
 
 ### Compliance
 
@@ -132,8 +111,7 @@ organization accessing the network. Multiple organizations sharing a network may
 require the administrator to provide unique access tokens that enable an audit
 log of access requests to be maintained.
 
-Definitions
------------
+## Definitions
 
 The following definitions are used throughout this project.
 
@@ -154,8 +132,7 @@ The following definitions are used throughout this project.
 | Storage Operation Expiry | Each encryption operation associated with the storage operation will include a timestamp after which the operations data will be considered unusable other than the return URL. This will typically be no more than a few seconds where the clock used to generate the expiry time and validate the timestamp is synchronised. |
 | Table                    | Analogous to a relational database’s definition of table. The table name appears as the first segment in the URL path.                                                                                                                                                                                                         |
 
-Concept
--------
+## Concept
 
 A network of distributed domains known as “nodes” are used to securely store
 information within first party cookie files associated with multiple domains.
@@ -165,22 +142,22 @@ standard of interoperability.
 The following diagram provides an overview of the concept covering initiation (1
 &2), storage (3 to 5) and completion (6 &7).
 
-![Network overview](images/network-overview.png "Network overview")
+![Network overview](images/network-overview.png)
 
 1.  Website passes information to a Host’s access node to encrypt and return
-    with first node URL
-
-2.  Website passes information request to node A to store
-
-3.  Node A passes information to node D to store
-
-4.  Node D passes information to node F to store
-
-5.  Node F passes information back node A to store
-
-6.  Node A passes result to Website
-
-7.  Website decrypts information by calling the access node
+    with first node URL.
+2.  Website directs the web browser to the URL returned from step 1 and
+    processes the cookies provided setting new ones if necessary.
+3.  Node A directs the web browser to node D settings and reading cookies.
+4.  Node D directs the web browser to node F setting and read cookies.
+5.  Node F directs the web browsers back to node A to set and read cookies. It
+    is possible other nodes contained more recent data than node A at step 2 and
+    this updated data should be recorded in node A before returning to the
+    website operator’s return URL.
+6.  Node A directs the web browser to the website operators return URL with the
+    encrypted data inserted into the return URL.
+7.  Website operator extracts the encrypted information from the URL and passes
+    it to the Host’s access node to decrypt.
 
 ### Initiation
 
@@ -197,18 +174,18 @@ URL to return the browser window to is https://example.com, the table name is
 “example”, the key is “key” where the value will expire on 1st January 2021 and
 will overwrite any existing values.
 
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 https://accessnode.net/api/v1/create?returnUrl=https://example.com&table=example&key>2021-01-01=hello
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The access node will then respond with a URL that is not human readable for the
 first storage node to use for the storage operation. The path is encrypted by
 the access node with a secret it knows about from the first storage node it has
 selected.
 
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 https://storagenode-a.net/OC41MWRjLnVrOC412Mv6Vp0DFeTCFhhKHz1H2JabpJ8cA-4/mKsa58t6yxpX...DnAUvPo2GdyJBLXM
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The web server initiating the request will be responsible for redirecting the
 web browser window to the returned URL.
@@ -219,24 +196,21 @@ Each storage node will perform the following actions.
 
 1.  Receive the HTTP request and decrypt the URL path to obtain details of the
     storage operation.
-
 2.  Evaluate the cookies the storage node domain and path already knows about
     either replacing them with the values held in the storage operation, or
     updating the storage operation with the values from it’s cookies.
-
 3.  Create the next URL to visit.
 
-    a.  If the number of nodes required to complete the storage operation have
-        not yet been visited then choose another storage node and encrypt the
-        operation data so that the next node can decrypt it.
+    a. If the number of nodes required to complete the storage operation have
+    not yet been visited then choose another storage node and encrypt the
+    operation data so that the next node can decrypt it.
 
-    b.  If all the required nodes have been visited then use the return URL. The
-        operation data will be encrypted so that the access node used at
-        initiation can decrypt it.
+    b. If all the required nodes have been visited then use the return URL. The
+    operation data will be encrypted so that the access node used at initiation
+    can decrypt it.
 
-4.  Respond to the browser with HTML and a meta refresh element to redirect
-    the browser user interface to.
-
+4.  Respond to the browser with HTML and a meta refresh element to redirect the
+    browser user interface to.
 5.  If an exception occurs, for example cookies are disabled, then a message can
     be presented to the user.
 
@@ -250,39 +224,38 @@ appended to the URL. The web site operator must then extract the encrypted data
 and pass it to the access node to be decrypted. The following URL shows how this
 would be achieved in a server to server HTTP request.
 
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 http://51dc.uk/api/v1/decrypt?c9hGPPnJxRNckc...Q58765kHzbIRN
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The access node will return the keys in a JSON format with the created and
 expiry times added. The following is an example when the key and value are shown
 earlier are returned.
 
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [{
 "Key":"key",
 "Created":"2020-09-30T00:00:00Z",
 "Expires":"2020-11-21T00:00:00Z",
 "Value":"hello"
 }]
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Example server-side pseudo code
--------------------------------
+## Example server-side pseudo code
 
 The following provides a server-side example of the code needed to implement the
 solution for various scenarios.
 
 ### Create a service provider
 
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Create a singleton to access the network.
 var swift = new SwiftService([Access Node], [Access Credentials]);
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Create the URL
 
-```go
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Example 1. Fetch the value that exists only setting it to value if a value
 does not already exist.
 var url = swift.CreateStorageUrl(
@@ -306,26 +279,25 @@ var url = sharedStateService.CreateStorageUrl(
     [backgroundColor],
     [messageColor],
     [progressColor]);
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Start redirection
 
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Use the location header to get the response to the current web request to
 redirect the browser to a new page.
 response.Headers.Add(“Location”, url);
 response.Status = 304;
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Receive the information from the complete operation
 
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // The path from the request URL is passed to the service to return the value.
 var jsonValues = swift.GetStorageValue([request.url.path]);
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-User interface
---------------
+## User interface
 
 As this project is deployed widely people will become used to the short delay
 that occurs prior to the publisher’s content becoming visible or when they
@@ -345,25 +317,21 @@ effect in practice of navigating between pages which display the same simple
 content is pleasingly smoothly. This is an important principle when considering
 people’s use of the web.
 
-Network
--------
+## Network
 
 The following diagram shows a network with two hosts (1 and 2) each operating
 six nodes.
 
-![Different Nodes](images/different-nodes.png "Different Nodes")
+![Different Nodes](images/different-nodes.png)
 
 The following definitions apply to each of the four node types.
 
 -   Active node - an active storage node known only to the host used to store
     information.
-
 -   Interconnect node - an active storage node which is also known to one or
     more other hosts.
-
 -   Dormant node - a node that is ready to become part of the network but is not
     yet known to other nodes.
-
 -   Retired node – a node that is no longer available.
 
 Currently nodes B, C, F, G, H and J are active nodes that can be used for
@@ -376,8 +344,7 @@ Nodes A and I have been retired from the network and are no longer being used.
 Nodes D, E, K and L are ready to join the network when the host makes them
 active.
 
-Home node
----------
+## Home node
 
 Networks may contain 100s of nodes operated by many hosts. It is important to
 minimise delay when performing a storage operation. A home node is identified
@@ -388,7 +355,7 @@ suitable for this purpose.
 In the following diagram node D is the home node for web browser 1, and node C
 the home node for web browser 2.
 
-![Home Nodes](images/home-nodes.png "Home Nodes")
+![Home Nodes](images/home-nodes.png)
 
 The home node is used as the first and last storage node for the storage
 operation. Where information is being retrieved from the network if the home
@@ -399,8 +366,7 @@ Home nodes provide the benefits of a single fixed domain used for the sharing of
 web information without requiring a single centralized operator. They will also
 vary over time as the IP address or network changes.
 
-Conflicts
----------
+## Conflicts
 
 Because the network may contain more nodes than can practically be accessed in a
 single storage operation it is possible that multiple values for the same key
@@ -424,16 +390,14 @@ In practice this scenario will occur infrequently due to the assignment of a
 home node and ensuring that node is used for the first and last storage
 operation.
 
-Keys
-----
+## Keys
 
 Any requestor of the network is free to specify the table and keys used for the
 storage operation. This enables multiple requestors to use the network and share
 state data using the same table and key names where they have agreed on naming
 conventions.
 
-Data structures
----------------
+## Data structures
 
 ### Key value
 
@@ -476,8 +440,7 @@ The table is not included in the operation data structure because it appears as
 the first segment of the storage operation URL. The encrypted data operation
 structure is the second segment.
 
-Other considerations
---------------------
+## Other considerations
 
 ### Multiple Networks
 
